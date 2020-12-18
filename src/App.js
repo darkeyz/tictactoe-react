@@ -1,23 +1,35 @@
-import logo from './logo.svg';
 import './App.css';
 
+const Cell = () => {
+  return (
+    <td className="cell"></td>
+  )
+}
+
+const Row = () => {
+  const cells = []
+  for (let i = 0; i < 3; i++) {
+    cells.push(<Cell />)
+  }
+  return (
+    <tr className="row">
+      {cells}
+    </tr>
+  )
+} 
+  
 function App() {
+  const rows = []
+  for (let i = 0; i < 3; i++) {
+    rows.push(<Row />)
+  }
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <table>
+        <tbody>
+          {rows}
+        </tbody> 
+      </table> 
     </div>
   );
 }
