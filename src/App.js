@@ -1,23 +1,24 @@
-import logo from './logo.svg';
+import { useState } from 'react';
 import './App.css';
-
+import Grid from './Grid';
+  
 function App() {
+  const [dimension] = useState(3)
+  /*
+  async function changeDimension(e) {
+    await setDimension(e.target.value)
+    console.log(dimension)
+  } */
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {/* // ToDo */}
+      {/* <select onChange={(e) => changeDimension(e)} value={dimension}>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select> */}
+       <Grid dimension={dimension} />
     </div>
   );
 }
