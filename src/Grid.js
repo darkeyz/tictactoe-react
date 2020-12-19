@@ -3,158 +3,126 @@ import { useState } from "react";
 const { default: Cell } = require("./Cell");
 
 const Grid = (props) => {
-  const initialState = {
-    message: "",
+  const CIRCLE = 'O'
+  const CROSS = 'X'
+  const intialParams = {
     dimension: props.dimension,
-    cells: Array(props.dimension * props.dimension).fill(null),
-    nextPlayer: "X",
+    nextPlayer: CROSS,
   };
-  const [state, setState] = useState(initialState);
+  const [state, setState] = useState(intialParams);
+  const [grid, setGrid] = useState(drawGrid);
 
-  function handlePlay(i) {
-    if (findWinner().found || state.cells[i]) {
-      return false;
+  async function handlePlay(i, j) {
+    if (grid[i][j] || foundWinner() || draw()) {
+      return false
+    } 
+    else if(!foundWinner()) {
+      const grid_clone = grid.slice()
+      grid_clone[i][j] = state.nextPlayer
+      await setGrid(grid_clone)
+      await setState({...state, nextPlayer: state.nextPlayer === CIRCLE ? CROSS : CIRCLE})
+      // console.log(grid)
+      return foundWinner()
     }
-    const cloned_cells = state.cells.slice();
-    cloned_cells[i] = !cloned_cells[i] ? state.nextPlayer : cloned_cells[i];
-    setState(
-      state.nextPlayer === "X"
-        ? { ...state, cells: cloned_cells, nextPlayer: "O" }
-        : { ...state, cells: cloned_cells, nextPlayer: "X" }
-    );
-    if (draw()) {
-      return false;
-    }
-    return true;
+    return false
   }
 
-  function findWinner() {
-    const rows = () => {
-      const output = [];
-      for (let i = 0; i < state.cells.length; i += state.dimension) {
-        const row = [];
-        for (let j = i; j < i + state.dimension; j++) {
-          row.push(j);
-        }
-        output.push(row);
-      }
-      return output;
-    };
+  // Check if all cell values are equal 
+  const winCondition = (cells) => cells.every((cell) => cell && cell === cells[0])
+
+  function foundWinner() {
+    // Build rows values array
+    const rows = () => grid.some((row) => winCondition(row))
+
+    // Build columns values array
     const columns = () => {
-      const output = [];
-      for (let i = 0; i < state.dimension; i++) {
-        const column = [];
-        for (let j = i; j < state.cells.length; j += state.dimension) {
-          column.push(j);
+      return grid.some((row, i) => {
+        let columns = []
+        for (let j = 0; j < grid.length; j++) {
+          columns.push(grid[j][i])
         }
-        output.push(column);
-      }
-      return output;
+        return winCondition(columns)
+      })
     };
-    const diagonals = () => {
-      const output = [[], []];
-      const step = parseInt(state.dimension + state.dimension / 2);
-      const stepInvert = parseInt(state.dimension / 2 + 1);
-      for (let i = 0; i < state.cells.length; i += step) {
-        output[0].push(i);
-      }
-      for (
-        let i = state.dimension - 1;
-        i < state.cells.length - 1;
-        i += stepInvert
-      ) {
-        output[1].push(i);
-      }
-      return output;
-    };
-    const winCombos = rows().concat(columns()).concat(diagonals());
-    const found = winCombos.some((set) => {
-      return set.every(
-        (val) => {
-          return state.cells[val] && state.cells[val] === state.cells[set[0]]
-        }
-      );
-    });
-    const winner = winCombos.find((set) => {
-      return set.every(
-        (val) => {
-          return state.cells[val] && state.cells[val] === state.cells[set[0]]
-        }
-      );
-    });
-    if (typeof winner !== "undefined") {
-      return {found, winner: state.cells[winner[0]]};
-    }
-    return {found, winner: ""};
-  }
 
+    // Build diagonal values array
+    const diagonals = () => {
+      const first_diagonal = () => grid.map((row, index) => grid[index][index])
+      // making a row inversion to make it work with the win function
+      const grid_clone = grid.slice()
+      const second_diagonal = () => grid_clone.reverse().map((row, index) => grid_clone[index][index])
+      return winCondition(first_diagonal()) || winCondition(second_diagonal())
+    };
+
+    return rows() || columns() || diagonals()
+  }
 
   function draw() {
-    const draw = state.cells.every((val) => val != null);
-    if (draw) {
-      console.log("draw");
+    return !foundWinner() && grid.every((row) => {
+      return row.every((cell) => {
+        return cell
+      })
+    })
+  }
+
+  function gameEnd() {
+    return draw() || foundWinner();
+  }
+
+  function info() {
+    return draw()
+      ? "DRAW"
+      : foundWinner()
+      ? `WINNER ${state.nextPlayer === CIRCLE ? CROSS : CIRCLE}`
+      : "";
+  }
+
+  function drawGrid() {
+    let rows = [];
+    for (let i = 0; i < state.dimension; i++) {
+      rows[i] = [];
+      for (let j = 0; j < state.dimension; j++) {
+        rows[i].push(null);
+      }
     }
-    return draw;
+    return rows;
+  }
+
+  async function restart() {
+    if (gameEnd()) {
+      const newGrid = drawGrid()
+      await setGrid(newGrid)
+    }
   }
 
   return (
-    <div>
+    <div className='wrapper'>
+      <div className={gameEnd() ? "info" : "info-hidden"}>{info()}</div>
       <table>
         <tbody>
-          <tr>
-            <Cell
-              value={state.cells[0]}
-              state={state}
-              handlePlay={() => handlePlay(0)}
-            />
-            <Cell
-              value={state.cells[1]}
-              state={state}
-              handlePlay={() => handlePlay(1)}
-            />
-            <Cell
-              value={state.cells[2]}
-              state={state}
-              handlePlay={() => handlePlay(2)}
-            />
-          </tr>
-          <tr>
-            <Cell
-              value={state.cells[3]}
-              state={state}
-              handlePlay={() => handlePlay(3)}
-            />
-            <Cell
-              value={state.cells[4]}
-              state={state}
-              handlePlay={() => handlePlay(4)}
-            />
-            <Cell
-              value={state.cells[5]}
-              state={state}
-              handlePlay={() => handlePlay(5)}
-            />
-          </tr>
-          <tr>
-            <Cell
-              value={state.cells[6]}
-              state={state}
-              handlePlay={() => handlePlay(6)}
-            />
-            <Cell
-              value={state.cells[7]}
-              state={state}
-              handlePlay={() => handlePlay(7)}
-            />
-            <Cell
-              value={state.cells[8]}
-              state={state}
-              handlePlay={() => handlePlay(8)}
-            />
-          </tr>
+          {grid.map((row, i) => {
+            return (
+              <tr key={i}>
+                {row.map((cell, j) => {
+                  return (
+                    <Cell
+                      key={`${i}-${j}`}
+                      value={grid[i][j]}
+                      state={state}
+                      handlePlay={() => handlePlay(i, j)}
+                    />
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
-      <div className={draw() || findWinner().found ? "info" : "info-hidden"}>{draw() ? "DRAW" : findWinner().found ? `WINNER ${findWinner().winner}` : ""}</div>
+      {(
+        <div className={gameEnd() ? "btn show" : "btn"} onClick={() => restart()}>
+          Restart
+        </div>
+      )}
     </div>
   );
 };
