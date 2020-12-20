@@ -92,6 +92,7 @@ const Grid = (props) => {
     if (gameEnd()) {
       const newGrid = drawGrid()
       await setGrid(newGrid)
+      setState(intialParams)
     }
   }
 
