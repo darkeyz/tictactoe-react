@@ -98,7 +98,8 @@ const Grid = (props) => {
 
   return (
     <div className='wrapper'>
-      <div className={gameEnd() ? "info" : "info-hidden"}>{info()}</div>
+      {gameEnd() && <div className="info">{info()}</div>}
+      {!gameEnd() && <div className="info">Turn {state.nextPlayer}</div>}
       <table>
         <tbody>
           {grid.map((row, i) => {
