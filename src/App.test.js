@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+test('Renders Grid showing whose turn it is', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  const whoseTurn = screen.getByText(/Turn/i);
+  expect(whoseTurn).toBeInTheDocument();
 });
